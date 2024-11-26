@@ -1,6 +1,6 @@
 import React from 'react';
 import { Stack, router, useNavigation } from 'expo-router';
-import { CommonActions } from '@react-navigation/native';
+import { CommonActions, useNavigationState} from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { ActionSheetProvider, useActionSheet } from '@expo/react-native-action-sheet';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -16,6 +16,8 @@ export default function Layout() {
 const AppLayout = () => {
   const { showActionSheetWithOptions } = useActionSheet();
   const navigation = useNavigation();
+  const rotas = useNavigationState((state) => state.routeNames);
+  const currentIndex = useNavigationState((state) => state.index);
 
   const handleLogout = () => {
     navigation.dispatch(
@@ -28,10 +30,18 @@ const AppLayout = () => {
   
   };
 
+  console.log(rotas)
+  console.log(currentIndex)
   const openMenu = () => {
-    const options = ['About', 'Logout', 'Cancel'];
-    const cancelButtonIndex = 2; 
-    const destructiveButtonIndex = 1; 
+    let options = ['About', 'Logout', 'Cancel'];
+    let cancelButtonIndex = 2; 
+    let destructiveButtonIndex = 1; 
+
+    if(currentIndex == 2){
+      options = ['Logout', 'Cancel'];
+      cancelButtonIndex = 1;
+      destructiveButtonIndex = 0;
+    }
 
     showActionSheetWithOptions(
       {
