@@ -1,19 +1,27 @@
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
 
 const CadastroForm = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  let register = false
+  const [isValidLogin, setIsValidLogin] = useState(false);
 
   const handleRegister = () => {
-    if (username === 'luan' && password === '12344') {
+    if (isValidLogin) {
       router.push('/home');
     } else {
       Alert.alert('Erro', 'Usuário ou senha incorretos!');
     }
   };
+
+  useEffect(() => {
+    if (username === 'luan' && password === '12344') {
+      setIsValidLogin(true);
+    } else {
+      setIsValidLogin(false);
+    }
+  }, [username, password]);
 
   return (
     <View style={styles.container}>
