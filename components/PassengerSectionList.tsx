@@ -1,6 +1,7 @@
-import React from 'react';
-import { View, Text, SectionList, StyleSheet, Image } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, SectionList, StyleSheet, Image, Modal, TouchableOpacity, Button } from 'react-native';
 import groupPassengersByCountry from '../services/helpers/groupPassengers';
+import { groupPassengersByPassenger } from '../services/helpers/groupPassengersByPassenger';
 
 export type Passenger = {
   id: number;
@@ -16,6 +17,25 @@ type PassengerSectionListProps = {
 
 export default function PassengerSectionList({ passengers }: PassengerSectionListProps) {
   const groupedPassengers = groupPassengersByCountry(passengers);
+  const passengersWithCountries = groupPassengersByPassenger(passengers);
+
+
+  const [selectedPassenger, setSelectedPassenger] = useState<{
+    passenger_name: string;
+    passenger_avatar: string;
+    countries: string[];
+  } | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const handlePassengerPress = (passengerName: string) => {
+    const passenger = passengersWithCountries.find(
+      (p) => p.passenger_name === passengerName
+    );
+    if (passenger) {
+      setSelectedPassenger(passenger);
+      setModalVisible(true);
+    }
+  };
 
   return (
     <View style={styles.screen}>
@@ -26,10 +46,15 @@ export default function PassengerSectionList({ passengers }: PassengerSectionLis
           sections={groupedPassengers}
           keyExtractor={(item, index) => `${item.id}-${index}`}
           renderItem={({ item }) => (
-            <View style={styles.passenger}>
-              <Image source={{ uri: item.passenger_avatar }} style={styles.avatar} />
-              <Text style={styles.passengerName}>{item.passenger_name}</Text>
-            </View>
+            <TouchableOpacity onPress={() => handlePassengerPress(item.passenger_name)}>
+              <View style={styles.passenger}>
+                <Image source={{ uri: item.passenger_avatar }} style={styles.avatar} />
+                <View>
+                  <Text style={styles.passengerName}>{item.passenger_name}</Text>
+                  <Text style={styles.passengerDestination}>{item.destination}</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
           )}
           renderSectionHeader={({ section: { title } }) => (
             <View style={styles.sectionHeader}>
@@ -40,6 +65,27 @@ export default function PassengerSectionList({ passengers }: PassengerSectionLis
           showsVerticalScrollIndicator={false}
         />
       </View>
+
+      <Modal
+        visible={modalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>
+              Países visitados por {selectedPassenger?.passenger_name}
+            </Text>
+            {selectedPassenger?.countries.map((country, index) => (
+              <Text key={index} style={styles.modalText}>
+                {country}
+              </Text>
+            ))}
+            <Button title="Fechar" onPress={() => setModalVisible(false)} />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -97,5 +143,31 @@ const styles = StyleSheet.create({
   passengerName: {
     fontSize: 16,
     color: '#333',
+  },
+  passengerDestination: {
+    fontSize: 14,
+    color: '#666',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  modalText: {
+    fontSize: 16,
+    marginBottom: 5,
   },
 });
